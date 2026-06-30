@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "bskyvideo.com - Download Bluesky Videos",
   description: "Fast, secure utility to download natively hosted media from the Bluesky social platform.",
+  verification: {
+    google: "HZLyisr0p1jHR0Q1GIOQIxz5KuacxpQza333QIWtGo8",
+  },
 };
 
 export default function RootLayout({
