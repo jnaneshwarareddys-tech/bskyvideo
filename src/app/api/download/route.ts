@@ -40,43 +40,62 @@ export async function GET(req: Request) {
        variantUrl = playlistUrl;
     }
 
-    // 2. Setup the PassThrough stream to capture FFmpeg output
-    const passThrough = new PassThrough();
+    const fs = require('fs');
+    const path = require('path');
+    const os = require('os');
+    const { randomUUID } = require('crypto');
 
-    // 3. Convert Node stream to Web ReadableStream for Next.js Response
+    // 2. Create a temporary file path
+    const tmpPath = path.join(os.tmpdir(), `${randomUUID()}.mp4`);
+
+    // 3. Remux HLS to MP4 format and save to the temp file
+    await new Promise((resolve, reject) => {
+      ffmpeg(variantUrl)
+        .inputOptions([
+          '-reconnect 1',
+          '-reconnect_streamed 1',
+          '-reconnect_delay_max 5'
+        ])
+        .outputOptions([
+          '-c copy',             // Copy streams without re-encoding
+          '-bsf:a aac_adtstoasc', // Convert AAC ADTS to ASC for valid MP4
+          '-f mp4'               // Output format is MP4
+        ])
+        .save(tmpPath)
+        .on('error', (err: any) => {
+          console.error('FFmpeg error:', err);
+          reject(err);
+        })
+        .on('end', () => {
+          console.log('FFmpeg processing finished successfully');
+          resolve(null);
+        });
+    });
+
+    // 4. Read the perfect MP4 file from disk
+    const fileStream = fs.createReadStream(tmpPath);
+
+    // 5. Convert Node stream to Web ReadableStream for Next.js Response
     const webStream = new ReadableStream({
       start(controller) {
-        passThrough.on('data', (chunk) => controller.enqueue(chunk));
-        passThrough.on('end', () => controller.close());
-        passThrough.on('error', (err) => controller.error(err));
+        fileStream.on('data', (chunk) => controller.enqueue(chunk));
+        fileStream.on('end', () => {
+          controller.close();
+          // Clean up temp file immediately after download finishes
+          fs.unlink(tmpPath, () => {});
+        });
+        fileStream.on('error', (err) => {
+          controller.error(err);
+          fs.unlink(tmpPath, () => {});
+        });
       },
       cancel() {
-        passThrough.destroy();
+        fileStream.destroy();
+        fs.unlink(tmpPath, () => {});
       }
     });
 
-    // 4. Remux HLS directly to MP4 format using FFmpeg
-    ffmpeg(variantUrl)
-      .inputOptions([
-        '-reconnect 1',
-        '-reconnect_streamed 1',
-        '-reconnect_delay_max 5'
-      ])
-      .outputOptions([
-        '-c copy',     // Copy streams without re-encoding (extremely fast, 0 server load)
-        '-f mp4',      // Output format is MP4
-        '-movflags frag_keyframe+empty_moov' // Crucial for streaming MP4 over a pipe
-      ])
-      .on('error', (err) => {
-        console.error('FFmpeg streaming error:', err);
-        passThrough.destroy(err);
-      })
-      .on('end', () => {
-        console.log('FFmpeg stream finished successfully');
-      })
-      .pipe(passThrough, { end: true });
-
-    // 5. Stream the true MP4 container directly to the user
+    // 6. Stream the true MP4 container directly to the user
     return new NextResponse(webStream, {
       headers: {
         'Content-Type': 'video/mp4',
