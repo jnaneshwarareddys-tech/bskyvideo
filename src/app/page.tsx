@@ -19,19 +19,34 @@ export default function Home() {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
-      const res = await fetch('/api/extract', {
+      const res = await fetch('https://api.cobalt.tools/api/json', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
+        headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          url: url,
+          videoQuality: 'max',
+          vCodec: 'h264'
+        })
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to extract video');
+        throw new Error(data.text || 'Failed to extract video');
+      }
+      
+      if (data.status === 'error') {
+        throw new Error(data.text || 'Error processing video');
       }
 
-      setResult(data);
+      setResult({
+        playlist: data.url,
+        thumbnail: '',
+        text: 'Video processed successfully! Click the button below to download your MP4.'
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -114,20 +129,20 @@ export default function Home() {
 
         {/* Result State */}
         {result && (
-          <div className="w-full bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 space-y-6 flex flex-col sm:flex-row items-center sm:items-start gap-8">
-            <div className="w-full sm:w-1/2 rounded-xl overflow-hidden shadow-md">
-              <img src={result.thumbnail} alt="Video Thumbnail" className="w-full h-auto object-cover" />
-            </div>
-            <div className="w-full sm:w-1/2 space-y-6">
-              <p className="text-slate-600 dark:text-slate-300 italic line-clamp-3">"{result.text}"</p>
+          <div className="w-full bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 space-y-6 flex flex-col items-center">
+            <div className="w-full space-y-6">
+              <p className="text-slate-600 dark:text-slate-300 italic text-center">"{result.text}"</p>
               
               <a 
-                href={`/api/download?playlistUrl=${encodeURIComponent(result.playlist)}`}
+                href={result.playlist}
+                download="bluesky_video.mp4"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block w-full p-4 text-center rounded-xl bg-corporate-blue text-white font-bold hover:bg-corporate-blue-hover transition-colors shadow-md"
               >
-                Download Video File (.ts)
+                Download Video (.mp4)
               </a>
-              <p className="text-xs text-slate-400 text-center">Downloads a native stream file. Mac users may need VLC to play.</p>
+              <p className="text-xs text-slate-400 text-center">Native MP4 format. Plays seamlessly on iPhone, Android, and PC.</p>
             </div>
           </div>
         )}
