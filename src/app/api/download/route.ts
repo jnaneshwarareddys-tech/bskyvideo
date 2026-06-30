@@ -84,7 +84,7 @@ export async function GET(req: Request) {
           // Clean up temp file immediately after download finishes
           fs.unlink(tmpPath, () => {});
         });
-        fileStream.on('error', (err) => {
+        fileStream.on('error', (err: any) => {
           controller.error(err);
           fs.unlink(tmpPath, () => {});
         });
