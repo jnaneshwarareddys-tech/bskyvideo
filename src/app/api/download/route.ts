@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
+import { PassThrough } from 'stream';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Max duration for Vercel Hobby tier is 10s usually, but we declare 60s in case they are on Pro.
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -11,84 +18,66 @@ export async function GET(req: Request) {
   }
 
   try {
-    // 1. Fetch the master playlist
+    // 1. Fetch the master playlist to find the highest quality video
     const masterRes = await fetch(playlistUrl);
     const masterText = await masterRes.text();
 
-    // 2. Find the highest quality variant playlist
     const lines = masterText.split('\n');
     let variantUrl = '';
     
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes('.m3u8') && !lines[i].startsWith('#')) {
         variantUrl = lines[i].trim();
-        // If it's a relative path, resolve it against the master playlist URL
         if (!variantUrl.startsWith('http')) {
           const baseUrl = playlistUrl.substring(0, playlistUrl.lastIndexOf('/') + 1);
           variantUrl = baseUrl + variantUrl;
         }
-        break; // Just take the first one for speed
+        break; 
       }
     }
 
     if (!variantUrl) {
-       // If it's not a master playlist but a media playlist directly, use the original URL
        variantUrl = playlistUrl;
     }
 
-    // 3. Fetch the media playlist
-    const mediaRes = await fetch(variantUrl);
-    const mediaText = await mediaRes.text();
+    // 2. Setup the PassThrough stream to capture FFmpeg output
+    const passThrough = new PassThrough();
 
-    // 4. Extract all .ts segment URLs
-    const mediaLines = mediaText.split('\n');
-    const segments: string[] = [];
-    const baseUrl = variantUrl.substring(0, variantUrl.lastIndexOf('/') + 1);
-
-    for (const line of mediaLines) {
-      if (line.trim() && !line.startsWith('#')) {
-        let segmentUrl = line.trim();
-        if (!segmentUrl.startsWith('http')) {
-          segmentUrl = baseUrl + segmentUrl;
-        }
-        segments.push(segmentUrl);
-      }
-    }
-
-    if (segments.length === 0) {
-      return new NextResponse('No video segments found', { status: 404 });
-    }
-
-    // 5. Create a ReadableStream that fetches and yields chunks sequentially
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for (const url of segments) {
-            const segmentRes = await fetch(url);
-            if (!segmentRes.ok) {
-              console.error(`Failed to fetch segment: ${url}`);
-              continue;
-            }
-            
-            const reader = segmentRes.body?.getReader();
-            if (!reader) continue;
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              controller.      enqueue(value);
-            }
-          }
-          controller.close();
-        } catch (err) {
-          console.error('Streaming error:', err);
-          controller.error(err);
-        }
+    // 3. Convert Node stream to Web ReadableStream for Next.js Response
+    const webStream = new ReadableStream({
+      start(controller) {
+        passThrough.on('data', (chunk) => controller.enqueue(chunk));
+        passThrough.on('end', () => controller.close());
+        passThrough.on('error', (err) => controller.error(err));
+      },
+      cancel() {
+        passThrough.destroy();
       }
     });
 
-    // 6. Return the stream with download headers
-    return new NextResponse(stream, {
+    // 4. Remux HLS directly to MP4 format using FFmpeg
+    ffmpeg(variantUrl)
+      .inputOptions([
+        '-reconnect 1',
+        '-reconnect_streamed 1',
+        '-reconnect_delay_max 5'
+      ])
+      .outputOptions([
+        '-c copy',     // Copy streams without re-encoding (extremely fast, 0 server load)
+        '-f mp4',      // Output format is MP4
+        '-movflags frag_keyframe+empty_moov' // Crucial for streaming MP4 over a pipe
+      ])
+      .on('error', (err) => {
+        console.error('FFmpeg streaming error:', err);
+        passThrough.destroy(err);
+      })
+      .on('end', () => {
+        console.log('FFmpeg stream finished successfully');
+      })
+      .pipe(passThrough, { end: true });
+
+    // 5. Stream the true MP4 container directly to the user
+    return new NextResponse(webStream, {
       headers: {
         'Content-Type': 'video/mp4',
         'Content-Disposition': 'attachment; filename="bluesky_video.mp4"',
