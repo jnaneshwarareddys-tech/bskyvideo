@@ -47,7 +47,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Header */}
       <header className="w-full border-b border-slate-200 dark:border-slate-800 p-6 flex justify-center items-center bg-white dark:bg-slate-900 shadow-sm z-10">
-        <h1 className="text-2xl font-extrabold tracking-tight text-corporate-blue">bskyvideo</h1>
+        <span className="text-2xl font-extrabold tracking-tight text-corporate-blue">bskyvideo</span>
       </header>
 
       {/* Main Content */}
@@ -57,8 +57,8 @@ export default function Home() {
         <AdBanner dataKey="ff67f388d02f31fc48868e6a5124ba4e" width={728} height={90} />
 
         <div className="w-full text-center space-y-4">
-          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Download Bluesky Videos</h2>
-          <p className="text-lg text-slate-500">Paste any public Bluesky post URL to securely download the native video.</p>
+          <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Bluesky Video Downloader</h1>
+          <p className="text-lg text-slate-500">The fastest tool to download Bluesky videos and GIFs to your device in MP4 format.</p>
         </div>
 
         {/* Input Form */}
@@ -136,6 +136,30 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* SEO Content Section */}
+        <section className="w-full max-w-2xl text-left space-y-8 mt-12 bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+          
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">How to Download Bluesky Videos</h2>
+            <ol className="list-decimal list-inside space-y-2 text-slate-600 dark:text-slate-300 leading-relaxed">
+              <li>Open the Bluesky app or website and find the post with the video or GIF you want to save.</li>
+              <li>Click the <strong>Share</strong> button and select <strong>Copy Link</strong>.</li>
+              <li>Paste the copied URL into our <strong>Bluesky video downloader</strong> input box above.</li>
+              <li>Click <strong>Extract Video</strong> and save the high-quality MP4 file directly to your device!</li>
+            </ol>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Best Bsky Video Downloader</h2>
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+              bskyvideo.com is the fastest and most secure <strong>Bluesky video downloader</strong> on the web. Our tool extracts media directly from the Bluesky (bsky.app) CDN, ensuring you get the highest quality MP4 files without any watermarks or compression. 
+            </p>
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+              Whether you are looking to <strong>download a bsky video</strong> on your iPhone, Android, or PC, our service is 100% free and requires no software installation or account sign-ups. Simply paste the link and download!
+            </p>
+          </div>
+        </section>
 
         {/* Ad Placement 2 */}
         <div className="mt-12">
