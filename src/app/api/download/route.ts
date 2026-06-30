@@ -78,7 +78,7 @@ export async function GET(req: Request) {
     // 5. Convert Node stream to Web ReadableStream for Next.js Response
     const webStream = new ReadableStream({
       start(controller) {
-        fileStream.on('data', (chunk) => controller.enqueue(chunk));
+        fileStream.on('data', (chunk: any) => controller.enqueue(chunk));
         fileStream.on('end', () => {
           controller.close();
           // Clean up temp file immediately after download finishes
