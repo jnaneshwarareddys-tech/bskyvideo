@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import AdBanner from '@/components/AdBanner';
 
 export default function Home() {
   const [url, setUrl] = useState('');
@@ -49,9 +50,7 @@ export default function Home() {
       <main className="flex-1 flex flex-col items-center p-8 mt-12 w-full max-w-3xl mx-auto space-y-12">
         
         {/* Ad Placement 1 */}
-        <div className="w-full h-24 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center rounded-lg text-sm text-slate-400">
-          Top Ad Placement (728x90)
-        </div>
+        <AdBanner dataKey="ff67f388d02f31fc48868e6a5124ba4e" width={728} height={90} />
 
         <div className="w-full text-center space-y-4">
           <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Download Bluesky Videos</h2>
@@ -134,8 +133,8 @@ export default function Home() {
         )}
 
         {/* Ad Placement 2 */}
-        <div className="w-full h-[250px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center rounded-lg text-sm text-slate-400 mt-12">
-          Content Ad Placement (300x250)
+        <div className="mt-12">
+          <AdBanner dataKey="1f7f1ca1c92d1afb51d731ef97d253ed" width={300} height={250} />
         </div>
 
       </main>
