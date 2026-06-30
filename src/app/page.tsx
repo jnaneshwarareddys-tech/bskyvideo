@@ -60,15 +60,33 @@ export default function Home() {
 
         {/* Input Form */}
         <form onSubmit={handleExtract} className="w-full bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 space-y-6">
-          <div>
+          <div className="relative">
             <input 
               type="url" 
               required
               placeholder="https://bsky.app/profile/username/post/..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-corporate-blue focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none text-lg transition-all bg-slate-50 dark:bg-slate-800 dark:text-white"
+              className="w-full p-5 pr-16 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-corporate-blue focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none text-lg transition-all bg-slate-50 dark:bg-slate-800 dark:text-white"
             />
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const text = await navigator.clipboard.readText();
+                  if (text) setUrl(text);
+                } catch (err) {
+                  console.error('Failed to read clipboard', err);
+                }
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-corporate-blue bg-white dark:bg-slate-800 p-2 rounded-lg transition-colors"
+              title="Paste from clipboard"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              </svg>
+            </button>
           </div>
           
           <button 
