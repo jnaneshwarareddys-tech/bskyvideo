@@ -105,14 +105,12 @@ export default function Home() {
               <p className="text-slate-600 dark:text-slate-300 italic line-clamp-3">"{result.text}"</p>
               
               <a 
-                href={result.playlist} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block w-full p-4 text-center rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors"
+                href={`/api/download?playlistUrl=${encodeURIComponent(result.playlist)}`}
+                className="block w-full p-4 text-center rounded-xl bg-corporate-blue text-white font-bold hover:bg-corporate-blue-hover transition-colors shadow-md"
               >
-                Open / Download Video stream
+                Download Video File (.ts)
               </a>
-              <p className="text-xs text-slate-400 text-center">Right-click the video and save, or use an HLS player.</p>
+              <p className="text-xs text-slate-400 text-center">Downloads a native stream file. Mac users may need VLC to play.</p>
             </div>
           </div>
         )}
