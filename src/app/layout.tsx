@@ -15,6 +15,10 @@ export const metadata: Metadata = {
     siteName: "bskyvideo.com",
     type: "website",
   },
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
   twitter: {
     card: "summary_large_image",
     title: "Bluesky Video Downloader",
