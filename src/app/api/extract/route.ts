@@ -39,24 +39,45 @@ export async function POST(req: Request) {
 
     const threadData = await threadRes.json();
     
-    // 3. Extract Video Playlist (m3u8)
+    // 3. Extract Media (Video or Images)
     const post = threadData.thread?.post;
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    const embed = post.embed;
-    if (!embed || embed.$type !== 'app.bsky.embed.video#view') {
-      return NextResponse.json({ error: 'No video found in this post' }, { status: 400 });
-    }
+    let playlist = null;
+    let thumbnail = null;
+    let images = null;
 
-    const playlist = embed.playlist;
-    const thumbnail = embed.thumbnail;
+    const extractMedia = (embedObj: any) => {
+      if (!embedObj) return;
+
+      if (embedObj.$type === 'app.bsky.embed.video#view') {
+        playlist = embedObj.playlist;
+        thumbnail = embedObj.thumbnail;
+      } else if (embedObj.$type === 'app.bsky.embed.images#view') {
+        images = embedObj.images; // Array of { fullsize, thumb, alt }
+      } else if (embedObj.$type === 'app.bsky.embed.recordWithMedia#view') {
+        extractMedia(embedObj.media);
+      } else if (embedObj.$type === 'app.bsky.embed.record#view') {
+        if (embedObj.record?.embeds) {
+          embedObj.record.embeds.forEach(extractMedia);
+        }
+      }
+    };
+
+    extractMedia(post.embed);
+
+    if (!playlist && (!images || images.length === 0)) {
+      return NextResponse.json({ error: 'No video or images found in this post' }, { status: 400 });
+    }
 
     return NextResponse.json({
       success: true,
+      mediaType: playlist ? 'video' : 'images',
       playlist,
       thumbnail,
+      images,
       text: post.record?.text || ''
     });
 

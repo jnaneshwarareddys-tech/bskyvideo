@@ -6,7 +6,13 @@ import AdBanner from '@/components/AdBanner';
 export default function Home() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ playlist: string, thumbnail: string, text: string } | null>(null);
+  const [result, setResult] = useState<{ 
+    mediaType?: 'video' | 'images',
+    playlist?: string, 
+    thumbnail?: string, 
+    images?: any[],
+    text: string 
+  } | null>(null);
   const [error, setError] = useState('');
 
   const handleExtract = async (e: React.FormEvent) => {
@@ -32,9 +38,11 @@ export default function Home() {
       }
 
       setResult({
+        mediaType: data.mediaType,
         playlist: data.playlist,
         thumbnail: data.thumbnail,
-        text: data.text || 'Download ready! Click below to save your MP4 file.'
+        images: data.images,
+        text: data.text || 'Download ready! Click below to save your file.'
       });
     } catch (err: any) {
       setError(err.message);
@@ -119,21 +127,45 @@ export default function Home() {
         {/* Result State */}
         {result && (
           <div className="w-full bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 space-y-6 flex flex-col sm:flex-row items-center sm:items-start gap-8">
-            <div className="w-full sm:w-1/2 rounded-xl overflow-hidden shadow-md">
-              <img src={result.thumbnail} alt="Video Thumbnail" className="w-full h-auto object-cover" />
-            </div>
-            <div className="w-full sm:w-1/2 space-y-6">
-              <p className="text-slate-600 dark:text-slate-300 italic line-clamp-3">"{result.text}"</p>
-              
-              <a 
-                href={`/api/download?playlistUrl=${encodeURIComponent(result.playlist)}`}
-                download="bluesky_video.mp4"
-                className="block w-full p-4 text-center rounded-xl bg-corporate-blue text-white font-bold hover:bg-corporate-blue-hover transition-colors shadow-md"
-              >
-                Download Video (.mp4)
-              </a>
-              <p className="text-xs text-slate-400 text-center">Downloads directly to your device. Plays seamlessly on all modern devices.</p>
-            </div>
+            {result.mediaType === 'video' || result.playlist ? (
+              <>
+                <div className="w-full sm:w-1/2 rounded-xl overflow-hidden shadow-md">
+                  <img src={result.thumbnail} alt="Video Thumbnail" className="w-full h-auto object-cover" />
+                </div>
+                <div className="w-full sm:w-1/2 space-y-6">
+                  <p className="text-slate-600 dark:text-slate-300 italic line-clamp-3">"{result.text}"</p>
+                  
+                  <a 
+                    href={`/api/download?playlistUrl=${encodeURIComponent(result.playlist || '')}`}
+                    download="bluesky_video.mp4"
+                    className="block w-full p-4 text-center rounded-xl bg-corporate-blue text-white font-bold hover:bg-corporate-blue-hover transition-colors shadow-md"
+                  >
+                    Download Video (.mp4)
+                  </a>
+                  <p className="text-xs text-slate-400 text-center">Downloads directly to your device. Plays seamlessly on all modern devices.</p>
+                </div>
+              </>
+            ) : (
+              <div className="w-full flex flex-col space-y-6">
+                {result.text && <p className="text-slate-600 dark:text-slate-300 italic text-center">"{result.text}"</p>}
+                <div className={`grid gap-6 ${result.images && result.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1 max-w-sm mx-auto'}`}>
+                  {result.images?.map((img, idx) => (
+                    <div key={idx} className="flex flex-col space-y-3">
+                      <div className="w-full rounded-xl overflow-hidden shadow-md bg-slate-100 dark:bg-slate-800">
+                        <img src={img.thumb || img.fullsize} alt={`Image ${idx + 1}`} className="w-full h-auto object-cover aspect-auto" />
+                      </div>
+                      <a 
+                        href={`/api/downloadImage?url=${encodeURIComponent(img.fullsize)}`}
+                        download={`bluesky_image_${idx + 1}.jpg`}
+                        className="block w-full p-3 text-center rounded-xl bg-corporate-blue text-white font-bold hover:bg-corporate-blue-hover transition-colors shadow-sm text-sm"
+                      >
+                        Download HD Image
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
