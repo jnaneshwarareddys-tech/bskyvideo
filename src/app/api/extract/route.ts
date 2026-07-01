@@ -45,9 +45,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    let playlist = null;
-    let thumbnail = null;
-    let images = null;
+    let playlist: string | null = null;
+    let thumbnail: string | null = null;
+    let images: any[] | null = null;
 
     const extractMedia = (embedObj: any) => {
       if (!embedObj) return;

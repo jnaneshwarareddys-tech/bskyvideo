@@ -169,6 +169,11 @@ export default function Home() {
           </div>
         )}
 
+        {/* Ad Placement 2 */}
+        <div className="mt-12 w-full flex justify-center">
+          <AdBanner dataKey="1f7f1ca1c92d1afb51d731ef97d253ed" width={300} height={250} />
+        </div>
+
         {/* SEO Content Section */}
         <section className="w-full max-w-2xl text-left space-y-8 mt-12 bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
           
@@ -178,7 +183,7 @@ export default function Home() {
               <li>Open the Bluesky app or website and find the post with the video or GIF you want to save.</li>
               <li>Click the <strong>Share</strong> button and select <strong>Copy Link</strong>.</li>
               <li>Paste the copied URL into our <strong>Bluesky video downloader</strong> input box above.</li>
-              <li>Click <strong>Extract Video</strong> and save the high-quality MP4 file directly to your device!</li>
+              <li>Click <strong>Extract Video</strong> and save the high-quality media file directly to your device!</li>
             </ol>
           </div>
 
@@ -192,11 +197,6 @@ export default function Home() {
             </p>
           </div>
         </section>
-
-        {/* Ad Placement 2 */}
-        <div className="mt-12">
-          <AdBanner dataKey="1f7f1ca1c92d1afb51d731ef97d253ed" width={300} height={250} />
-        </div>
 
       </main>
 
