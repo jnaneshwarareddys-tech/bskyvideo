@@ -45,9 +45,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
+    type BskyImage = { fullsize: string; thumb: string; alt?: string };
     let playlist: string | null = null;
     let thumbnail: string | null = null;
-    let images: any[] | null = null;
+    let images: BskyImage[] | null = null;
 
     const extractMedia = (embedObj: any) => {
       if (!embedObj) return;
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
 
     extractMedia(post.embed);
 
-    if (!playlist && (!images || images.length === 0)) {
+    if (!playlist && (!images || (images as BskyImage[]).length === 0)) {
       return NextResponse.json({ error: 'No video or images found in this post' }, { status: 400 });
     }
 
