@@ -80,24 +80,38 @@ export default function Home() {
               onChange={(e) => setUrl(e.target.value)}
               className="w-full p-5 pr-16 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-corporate-blue focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none text-lg transition-all bg-slate-50 dark:bg-slate-800 dark:text-white"
             />
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  const text = await navigator.clipboard.readText();
-                  if (text) setUrl(text);
-                } catch (err) {
-                  console.error('Failed to read clipboard', err);
-                }
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-corporate-blue bg-white dark:bg-slate-800 p-2 rounded-lg transition-colors"
-              title="Paste from clipboard"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-              </svg>
-            </button>
+            {url ? (
+              <button
+                type="button"
+                onClick={() => setUrl('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 p-2 rounded-lg transition-colors"
+                title="Clear input"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) setUrl(text);
+                  } catch (err) {
+                    console.error('Failed to read clipboard', err);
+                  }
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-corporate-blue bg-slate-50 dark:bg-slate-800 p-2 rounded-lg transition-colors"
+                title="Paste from clipboard"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                </svg>
+              </button>
+            )}
           </div>
           
           <button 
